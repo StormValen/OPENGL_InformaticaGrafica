@@ -1,0 +1,22 @@
+
+#version 330 core
+
+// Input vertex data, different for all executions of this shader.
+layout(location = 0) in vec3 position;
+uniform float offset;
+out vec4 vertexColor;
+out vec4 positionV;
+void main(){
+
+    gl_Position = vec4(position, 1.0f);
+
+ if(gl_Position.y<0){
+	if(gl_Position.x<0)
+		gl_Position.x = position.x - (abs(sin(offset))/2);
+	else
+		gl_Position.x = position.x + (abs(sin(offset))/2);
+	}
+	vertexColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	positionV = gl_Position;
+}
+

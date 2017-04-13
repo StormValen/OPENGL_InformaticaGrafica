@@ -1,0 +1,23 @@
+
+#version 330 core
+
+// Ouput data
+in vec4 vertexColor;
+out vec4 color;
+in vec4 positionV;
+out float numVertical, numDerecha, numIzquierda;
+void main()
+{
+	color = vertexColor;
+	
+	numVertical = (positionV.y - (-0.5))/(0.5-(-0.5));
+	numDerecha = (positionV.x - (0.5))/(1-(0.5));
+	numIzquierda = (positionV.x - (-0.5))/(-1-(-0.5));
+	
+		color = vec4(0.0f, 1.0f,numVertical, 1.0f);
+		
+	if(positionV.x < -0.5f)
+	color = vec4(numIzquierda,1-numIzquierda,numVertical,1.0f);
+	if(positionV.x > 0.5f)
+	color = vec4(numDerecha,1-numDerecha,numVertical,1.0f);
+	}
