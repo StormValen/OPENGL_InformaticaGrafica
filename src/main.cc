@@ -13,6 +13,9 @@
 #include "Shader.h"
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void DoMovement();
 const GLuint WIDTH = 800, HEIGHT = 800;
 
 float transparencia;
@@ -20,6 +23,19 @@ float angle{ 0.0f };
 float angleX{ 0.0f };
 float angleY{ 0.0f };
 
+glm::vec3 posicionCamara = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 apuntaCamara = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 arribaCamara = glm::vec3(0.0f, 1.0f, 0.0f);
+
+bool keys[1024];
+GLfloat deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
+GLfloat lastX = 400;
+GLfloat lastY = 400;
+GLfloat yaw = -90.0f;
+GLfloat pitch = 0.0f;
+GLfloat fov = 45.0f;
+bool firstMouse = true;
 
 int main()
 {
@@ -27,7 +43,7 @@ int main()
 	glfwInit();
 
 	//Version OpenGL - Reescalado pantalla.
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); 
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
@@ -36,9 +52,15 @@ int main()
 	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL 3", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
+
+	//Raton habilitado sin mostrarse
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	//Set callbacks utilizados.
 	glfwSetKeyCallback(window, key_callback);
-	
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+
 	//GLEW
 	glewInit();
 
@@ -50,7 +72,7 @@ int main()
 
 	//Variable Shader.
 	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/TextureFragmentShader.fragmentshader");
-	
+
 	//Datos de los vertices VBO.
 	GLfloat vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -174,6 +196,11 @@ int main()
 		//Comporavar si alguna de las texlas ha sido pulsada.
 		glfwPollEvents();
 
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+		DoMovement();
+
 		//Enlace de las 2 texturas.
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texturaA);
@@ -188,19 +215,43 @@ int main()
 
 		//Activar shader.
 		myShader.Use();
-		
+
+		//CAMARA FPS.
+		//////////////////////////////////////////////////////////////
+
+		//Eje Z
+		glm::vec3 zCamara = glm::normalize(posicionCamara - apuntaCamara); //El vector direccion apunta al contrario de donde esta mirando.
+
+																		   //Eje X
+		glm::vec3 xCamara = glm::normalize(glm::cross(arribaCamara, zCamara));
+
+		//Eje Y
+		glm::vec3 yCamara = glm::cross(zCamara, xCamara);
+
+		//Matriz LookAt
+		glm::mat4 view;
+		view = glm::lookAt(posicionCamara, posicionCamara + apuntaCamara, arribaCamara);
+
+		//Codigo para que la camara rote toda la escena automaticamente.
+		/*GLfloat radius = 10.0f;
+		GLfloat camX = sin(glfwGetTime())*radius;
+		GLfloat camZ = cos(glfwGetTime())*radius;
+		view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));*/
+
+		//////////////////////////////////////////////////////////////
+
 		//Camara.
 		glm::mat4 vista;
 		glm::mat4 proyeccion;
 		vista = glm::translate(vista, glm::vec3(0.0f, 0.0f, -3.0f));
-		proyeccion = glm::perspective(glm::radians(60.0f), (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
+		proyeccion = glm::perspective(glm::radians(fov), (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 
 		GLint modelLoc = glGetUniformLocation(myShader.Program, "matrix");
 		GLint viewLoc = glGetUniformLocation(myShader.Program, "vista");
 		GLint projLoc = glGetUniformLocation(myShader.Program, "proyeccion");
 
 		//Pasar de matrices al shader.
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(vista));
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proyeccion));
 
 		//Aplicar transformaciones.
@@ -215,13 +266,13 @@ int main()
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model1)); //Paso al shader.
 		glDrawArrays(GL_TRIANGLES, 0, 36); //Pintado del cubo.
 
-		//Bucle trasformaciones cubos.
+										   //Bucle trasformaciones cubos.
 		for (GLuint i = 1; i < 10; i++)
 		{
 			//Matriz de transformacion para cubos automaticos.
 			glm::mat4 movementCubesXY;
 			movementCubesXY = glm::translate(movementCubesXY, cubePositions[i]);//Recolocacion en posicion cubo.
-			movementCubesXY = glm::rotate(movementCubesXY,(GLfloat)glfwGetTime()*1, glm::vec3(1.0f, 1.0f, 0.0f)); //Rotacion en X e Y progresiva.
+			movementCubesXY = glm::rotate(movementCubesXY, (GLfloat)glfwGetTime() * 1, glm::vec3(1.0f, 1.0f, 0.0f)); //Rotacion en X e Y progresiva.
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(movementCubesXY)); //Paso al shader.
 			glDrawArrays(GL_TRIANGLES, 0, 36); //Pintado del cubo/
 		}
@@ -240,6 +291,18 @@ int main()
 	return 0;
 }
 
+void DoMovement() {
+	GLfloat cameraSpeed = 5.0f*deltaTime;
+	if (keys[GLFW_KEY_W])
+		posicionCamara += cameraSpeed * apuntaCamara;
+	if (keys[GLFW_KEY_S])
+		posicionCamara -= cameraSpeed * apuntaCamara;
+	if (keys[GLFW_KEY_A])
+		posicionCamara -= glm::normalize(glm::cross(apuntaCamara, arribaCamara)) * cameraSpeed;
+	if (keys[GLFW_KEY_D])
+		posicionCamara += glm::normalize(glm::cross(apuntaCamara, arribaCamara)) * cameraSpeed;
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -256,16 +319,76 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT) {
 		angleX -= 1.0f;
 	}
-	
+
 	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT) {
 		angleX += 1.0f;
 	}
 
 	if (key == GLFW_KEY_UP && action == GLFW_REPEAT) {
-		angleY -= 1.0f; 
+		angleY -= 1.0f;
 	}
 
 	if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT) {
-		angleY += 1.0f; 
+		angleY += 1.0f;
 	}
+
+	/*GLfloat velocidadCamara = 0.05f;
+	if (key == GLFW_KEY_W)
+	posicionCamara += velocidadCamara * apuntaCamara;
+
+	if (key == GLFW_KEY_S)
+	posicionCamara -= velocidadCamara * apuntaCamara;
+
+	if (key == GLFW_KEY_A)
+	posicionCamara -= glm::normalize(glm::cross(apuntaCamara, arribaCamara))*velocidadCamara;
+
+	if (key == GLFW_KEY_D)
+	posicionCamara += glm::normalize(glm::cross(apuntaCamara, arribaCamara))*velocidadCamara;*/
+
+	if (action == GLFW_PRESS)
+		keys[key] = true;
+
+	if (action == GLFW_RELEASE)
+		keys[key] = false;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	GLfloat xoffset = xpos - lastX;
+	GLfloat yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	GLfloat sensitivity = 0.05f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	apuntaCamara = glm::normalize(front);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+	if (fov >= 1.0f && fov <= 45.0f)
+		fov -= yoffset;
+	if (fov <= 1.0f)
+		fov = 1.0f;
+	if (fov >= 45.0f)
+		fov = 45.0f;
 }
