@@ -12,6 +12,7 @@
 #include <gtc/type_ptr.hpp>
 #include "Shader.h"
 
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -188,7 +189,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		//Color de fondo.
-		glClearColor(0.7f, 0.9f, 1.0f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 		//Limpiar ColorBuffer y ZBuffer.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -266,7 +267,7 @@ int main()
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model1)); //Paso al shader.
 		glDrawArrays(GL_TRIANGLES, 0, 36); //Pintado del cubo.
 
-										   //Bucle trasformaciones cubos.
+										//Bucle trasformaciones cubos.
 		for (GLuint i = 1; i < 10; i++)
 		{
 			//Matriz de transformacion para cubos automaticos.
@@ -274,7 +275,7 @@ int main()
 			movementCubesXY = glm::translate(movementCubesXY, cubePositions[i]);//Recolocacion en posicion cubo.
 			movementCubesXY = glm::rotate(movementCubesXY, (GLfloat)glfwGetTime() * 1, glm::vec3(1.0f, 1.0f, 0.0f)); //Rotacion en X e Y progresiva.
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(movementCubesXY)); //Paso al shader.
-			glDrawArrays(GL_TRIANGLES, 0, 36); //Pintado del cubo/
+			glDrawArrays(GL_TRIANGLES, 0, 36); //Pintado del cubo
 		}
 		glBindVertexArray(0);
 
@@ -331,19 +332,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT) {
 		angleY += 1.0f;
 	}
-
-	/*GLfloat velocidadCamara = 0.05f;
-	if (key == GLFW_KEY_W)
-	posicionCamara += velocidadCamara * apuntaCamara;
-
-	if (key == GLFW_KEY_S)
-	posicionCamara -= velocidadCamara * apuntaCamara;
-
-	if (key == GLFW_KEY_A)
-	posicionCamara -= glm::normalize(glm::cross(apuntaCamara, arribaCamara))*velocidadCamara;
-
-	if (key == GLFW_KEY_D)
-	posicionCamara += glm::normalize(glm::cross(apuntaCamara, arribaCamara))*velocidadCamara;*/
 
 	if (action == GLFW_PRESS)
 		keys[key] = true;
