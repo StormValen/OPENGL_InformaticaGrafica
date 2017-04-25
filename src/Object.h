@@ -7,14 +7,14 @@
 
 using namespace glm;
 
-class Object{
-	
-public:
-	/*enum FigureType{
-		cube = 0,
-	};*/
+class Object {
 
-	Object(vec3 scale, vec3 rotation, vec3 position);
+public:
+	enum FigureType {
+		cube = 0,
+	};
+
+	Object(vec3 scale, vec3 rotation, vec3 position, FigureType typef);
 	~Object();
 
 	void Draw();
@@ -29,6 +29,5 @@ private:
 	GLuint VBO, VAO, EBO;
 	vec3 position;
 	vec3 scale;
-	vec3 rotation;	
+	vec3 rotation;
 };
-

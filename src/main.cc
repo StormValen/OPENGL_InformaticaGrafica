@@ -11,6 +11,7 @@
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 #include "Shader.h"
+#include "Object.h"
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -33,8 +34,8 @@ GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 GLfloat lastX = 400;
 GLfloat lastY = 400;
-GLfloat yaw = -90.0f;
-GLfloat pitch = 0.0f;
+GLfloat Yaw = -90.0f;
+GLfloat Pitch = 0.0f;
 GLfloat fov = 45.0f;
 bool firstMouse = true;
 
@@ -72,65 +73,65 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//Variable Shader.
-	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/TextureFragmentShader.fragmentshader");
+	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//Datos de los vertices VBO.
-	GLfloat vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	/*GLfloat vertices[] = {
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
 	//Posiciones cubos en espacio escena.
 	glm::vec3 cubePositions[] = {
-		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
+	glm::vec3(0.0f,  0.0f,  0.0f),
+	glm::vec3(2.0f,  5.0f, -15.0f),
+	glm::vec3(-1.5f, -2.2f, -2.5f),
+	glm::vec3(-3.8f, -2.0f, -12.3f),
+	glm::vec3(2.4f, -0.4f, -3.5f),
+	glm::vec3(-1.7f,  3.0f, -7.5f),
+	glm::vec3(1.3f, -2.0f, -2.5f),
+	glm::vec3(1.5f,  2.0f, -2.5f),
+	glm::vec3(1.5f,  0.2f, -1.5f),
+	glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
 	GLuint VBO, VAO;
@@ -184,7 +185,9 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);*/
+
+	Object *myObj = new Object(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -202,6 +205,7 @@ int main()
 		lastFrame = currentFrame;
 		DoMovement();
 
+		/*
 		//Enlace de las 2 texturas.
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texturaA);
@@ -209,13 +213,13 @@ int main()
 
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texturaB);
-		glUniform1i(glGetUniformLocation(myShader.Program, "ourTexture2"), 1);
+		glUniform1i(glGetUniformLocation(myShader.Program, "ourTexture2"), 1);*/
 
 		//Paso transparencia para cambio de textura.
 		glUniform1f(glGetUniformLocation(myShader.Program, "transparencia"), transparencia);
 
 		//Activar shader.
-		myShader.Use();
+
 
 		//CAMARA FPS.
 		//////////////////////////////////////////////////////////////
@@ -255,11 +259,16 @@ int main()
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proyeccion));
 
+		myShader.Use();
+		glm::mat4 model = myObj->GetModelMatrix();
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		myObj->Draw();
+
 		//Aplicar transformaciones.
-		glBindVertexArray(VAO);
+		//glBindVertexArray(VAO);
 
 		//Matriz de transformacion para el cubo [0] -> Interaccion usuario.
-		glm::mat4 model1;
+		/*glm::mat4 model1;
 		model1 = glm::translate(model1, cubePositions[0]); //Recolocacion en posicion cubo.
 		model1 = glm::rotate(model1, glm::radians(angleY), glm::vec3(1.0f, 0.0f, 0.0f)); //Rotacion en Y.
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model1)); //Paso al shader.
@@ -267,25 +276,25 @@ int main()
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model1)); //Paso al shader.
 		glDrawArrays(GL_TRIANGLES, 0, 36); //Pintado del cubo.
 
-										//Bucle trasformaciones cubos.
+		//Bucle trasformaciones cubos.
 		for (GLuint i = 1; i < 10; i++)
 		{
-			//Matriz de transformacion para cubos automaticos.
-			glm::mat4 movementCubesXY;
-			movementCubesXY = glm::translate(movementCubesXY, cubePositions[i]);//Recolocacion en posicion cubo.
-			movementCubesXY = glm::rotate(movementCubesXY, (GLfloat)glfwGetTime() * 1, glm::vec3(1.0f, 1.0f, 0.0f)); //Rotacion en X e Y progresiva.
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(movementCubesXY)); //Paso al shader.
-			glDrawArrays(GL_TRIANGLES, 0, 36); //Pintado del cubo
+		//Matriz de transformacion para cubos automaticos.
+		glm::mat4 movementCubesXY;
+		movementCubesXY = glm::translate(movementCubesXY, cubePositions[i]);//Recolocacion en posicion cubo.
+		movementCubesXY = glm::rotate(movementCubesXY, (GLfloat)glfwGetTime() * 1, glm::vec3(1.0f, 1.0f, 0.0f)); //Rotacion en X e Y progresiva.
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(movementCubesXY)); //Paso al shader.
+		glDrawArrays(GL_TRIANGLES, 0, 36); //Pintado del cubo
 		}
-		glBindVertexArray(0);
+		glBindVertexArray(0);*/
 
 		//Swap de buffers.
 		glfwSwapBuffers(window);
 	}
 
 	//Eliminacion de memoria reservada.
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	/*glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);*/
 
 	//GLFW OFF.
 	glfwTerminate();
@@ -357,18 +366,18 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	xoffset *= sensitivity;
 	yoffset *= sensitivity;
 
-	yaw += xoffset;
-	pitch += yoffset;
+	Yaw += xoffset;
+	Pitch += yoffset;
 
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
+	if (Pitch > 89.0f)
+		Pitch = 89.0f;
+	if (Pitch < -89.0f)
+		Pitch = -89.0f;
 
 	glm::vec3 front;
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+	front.y = sin(glm::radians(Pitch));
+	front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
 	apuntaCamara = glm::normalize(front);
 }
 
