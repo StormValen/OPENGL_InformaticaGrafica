@@ -16,7 +16,7 @@
 #include <gtc/type_ptr.hpp>
 #include "Shader.h"
 #include "Object.h"
-
+#include "Model.h"
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -77,7 +77,9 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//Variable Shader.
-	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
+	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/ModelFragmentShader.fragmentshader");
+
+
 
 	//Datos de los vertices VBO.
 	/*GLfloat vertices[] = {
@@ -155,7 +157,7 @@ int main()
 
 	glBindVertexArray(0);
 
-
+	*/
 	//Carga textura 1.
 	GLuint texturaA;
 	glGenTextures(1, &texturaA);
@@ -174,6 +176,7 @@ int main()
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	/*
 	//Carga textura 2.
 	GLuint texturaB;
 	glGenTextures(1, &texturaB);
@@ -191,12 +194,13 @@ int main()
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);*/
 
-	Object *myObj = new Object(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
+	//Object *myObj = new Object(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
+	Model *SpiderModel = new Model("./gph/spider/spider.obj");
 
 	while (!glfwWindowShouldClose(window))
 	{
 		//Color de fondo.
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 		//Limpiar ColorBuffer y ZBuffer.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -209,12 +213,13 @@ int main()
 		lastFrame = currentFrame;
 		DoMovement();
 
-		/*
+		
 		//Enlace de las 2 texturas.
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texturaA);
 		glUniform1i(glGetUniformLocation(myShader.Program, "ourTexture1"), 0);
 
+		/*
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texturaB);
 		glUniform1i(glGetUniformLocation(myShader.Program, "ourTexture2"), 1);*/
@@ -264,8 +269,12 @@ int main()
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proyeccion));
 
 		myShader.Use();
-		glm::mat4 model = myObj->GetModelMatrix();
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//glm::mat4 model = myObj->GetModelMatrix();
+		glm::mat4 model;
+		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matrix"), 1, GL_FALSE, glm::value_ptr(model));
+		SpiderModel->Draw(myShader);
 		//myObj->Draw();
 
 		//Aplicar transformaciones.
