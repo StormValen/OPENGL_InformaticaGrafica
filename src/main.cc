@@ -5,6 +5,10 @@
 #include <GLFW/glfw3.h>
 // SOIL
 #include <SOIL.h>
+// ASSIMP
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include <iostream>
 #include <glm.hpp>
@@ -262,7 +266,7 @@ int main()
 		myShader.Use();
 		glm::mat4 model = myObj->GetModelMatrix();
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		myObj->Draw();
+		//myObj->Draw();
 
 		//Aplicar transformaciones.
 		//glBindVertexArray(VAO);
