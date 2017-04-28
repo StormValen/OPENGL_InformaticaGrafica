@@ -77,7 +77,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//Variable Shader.
-	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/ModelFragmentShader.fragmentshader");
+	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/TextureFragmentShader.fragmentshader");
 
 
 
@@ -159,7 +159,7 @@ int main()
 
 	*/
 	//Carga textura 1.
-	GLuint texturaA;
+	/*GLuint texturaA;
 	glGenTextures(1, &texturaA);
 
 	glBindTexture(GL_TEXTURE_2D, texturaA);
@@ -170,11 +170,11 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height;
-	unsigned char* image = SOIL_load_image("./gph/Tierra.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+	unsigned char* image = SOIL_load_image("./gph/spider/SpiderTex.jpg", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);*/
 
 	/*
 	//Carga textura 2.
@@ -195,7 +195,8 @@ int main()
 	glBindTexture(GL_TEXTURE_2D, 0);*/
 
 	//Object *myObj = new Object(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
-	Model *SpiderModel = new Model("./gph/spider/spider.obj");
+	//Model *SpiderModel = new Model("./gph/spider/spider.obj");
+	Model SpiderModel("./gph/spider/spider.obj");
 
 	//PruebaGitKraken
 
@@ -217,10 +218,10 @@ int main()
 
 		
 		//Enlace de las 2 texturas.
-		glActiveTexture(GL_TEXTURE0);
+		/*glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texturaA);
-		glUniform1i(glGetUniformLocation(myShader.Program, "ourTexture1"), 0);
-
+		glUniform1i(glGetUniformLocation(myShader.Program, "ourTexture1"), 0);*/
+		
 		/*
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texturaB);
@@ -276,7 +277,7 @@ int main()
 		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matrix"), 1, GL_FALSE, glm::value_ptr(model));
-		SpiderModel->Draw(myShader);
+		SpiderModel.Draw(myShader);
 		//myObj->Draw();
 
 		//Aplicar transformaciones.
