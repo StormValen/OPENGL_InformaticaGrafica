@@ -197,6 +197,8 @@ int main()
 	//Object *myObj = new Object(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
 	Model *SpiderModel = new Model("./gph/spider/spider.obj");
 
+	//PruebaGitKraken
+
 	while (!glfwWindowShouldClose(window))
 	{
 		//Color de fondo.
