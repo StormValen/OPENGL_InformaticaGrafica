@@ -24,6 +24,7 @@ void Camara::DoMovement(GLFWwindow * window) {
 	Deltatime = currTime - Lastframe;
 	Lastframe = currTime;
 	GLfloat cameraSpeed = 2.0f*Deltatime;
+
 	if (glfwGetKey(window, GLFW_KEY_W))
 		this->cameraPos += cameraSpeed * this->cameraFront;
 	if (glfwGetKey(window, GLFW_KEY_S))
@@ -32,6 +33,10 @@ void Camara::DoMovement(GLFWwindow * window) {
 		this->cameraPos -= glm::normalize(glm::cross(this->cameraFront, this->cameraUp)) * cameraSpeed;
 	if (glfwGetKey(window, GLFW_KEY_D))
 		this->cameraPos += glm::normalize(glm::cross(this->cameraFront, this->cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_Q))
+		this->cameraPos -= cameraSpeed* this->cameraUp;
+	if (glfwGetKey(window, GLFW_KEY_E))
+		this->cameraPos += cameraSpeed* this->cameraUp;
 }
 
 void Camara::MouseMove(GLFWwindow* window, double xpos, double ypos) {

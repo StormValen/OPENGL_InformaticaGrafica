@@ -19,11 +19,11 @@
 #include "Model.h"
 #include "Camara.h"
 
+const GLuint WIDTH = 1280, HEIGHT = 720;
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-//void DoMovement();
-const GLuint WIDTH = 800, HEIGHT = 800;
 
 float transparencia;
 float angle{ 0.0f };
@@ -34,11 +34,12 @@ glm::vec3 posicionCamara = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 apuntaCamara = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 arribaCamara = glm::vec3(0.0f, 1.0f, 0.0f);
 
-
-bool firstMouse = true;
+GLfloat fov = 45.0f;
 GLfloat sensibilidad = 0.05;
 
 Camara MyCamera(posicionCamara, apuntaCamara, sensibilidad,fov);
+
+//Object *random = new Object(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
 
 int main()
 {
@@ -52,9 +53,8 @@ int main()
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	//Crear objeto ventana
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL 3", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Informatica_Grafica", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
-
 
 	//Raton habilitado sin mostrarse
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -74,77 +74,65 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//Variable Shader.
-	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/TextureFragmentShader.fragmentshader");
+	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
-	//Carga textura 1.
-	/*GLuint texturaA;
-	glGenTextures(1, &texturaA);
+	//Cubo grande.
+	Object greatCube(glm::vec3(0.5f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
+	glm::vec4 greatCubeColor(0.4f, 0.2f, 0.5f, 0.5f);
+	glm::mat4 modelGreatCube;
+	glm::mat4 tGreatCube;
 
-	glBindTexture(GL_TEXTURE_2D, texturaA);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //Unwraping de textura.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //Filtro de textura.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	int width, height;
-	unsigned char* image = SOIL_load_image("./gph/spider/SpiderTex.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glBindTexture(GL_TEXTURE_2D, 0);*/
-
-	//Object *myObj = new Object(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
-	Model SpiderModel("./gph/spider/spider.obj");
-
-	//PruebaGitKraken
+	//Cubo luz.
+	Object lightCube(glm::vec3(0.1f), glm::vec3(0.00001f), glm::vec3(0.0f), Object::cube);
+	glm::vec4 lightCubeColor(1.0f);
+	glm::mat4 modelLightCube;
+	glm::mat4 tLightCube;
 
 	while (!glfwWindowShouldClose(window))
 	{
 		//Color de fondo.
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 
 		//Limpiar ColorBuffer y ZBuffer.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Comporavar si alguna de las texlas ha sido pulsada.
 		glfwPollEvents();
-		GLfloat currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-
-		MyCamera.DoMovement(window);
-
 		
-		//Enlace de las 2 texturas.
-		/*glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texturaA);
-		glUniform1i(glGetUniformLocation(myShader.Program, "ourTexture1"), 0);*/
-
-		//Paso transparencia para cambio de textura.
-		//glUniform1f(glGetUniformLocation(myShader.Program, "transparencia"), transparencia);
+		//Actualizacion camara.
+		MyCamera.DoMovement(window);
 
 		glm::mat4 view;
 		view = MyCamera.lookAt();
-		glm::mat4 proyeccion;
-		proyeccion = glm::perspective(MyCamera.GetFOV(), (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
+		glm::mat4 projection;
+		projection = glm::perspective(MyCamera.GetFOV(), (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
 
-		GLint modelLoc = glGetUniformLocation(myShader.Program, "matrix");
-		GLint viewLoc = glGetUniformLocation(myShader.Program, "vista");
-		GLint projLoc = glGetUniformLocation(myShader.Program, "proyeccion");
+		GLint modelLoc = glGetUniformLocation(myShader.Program, "model");
+		GLint viewLoc = glGetUniformLocation(myShader.Program, "view");
+		GLint projLoc = glGetUniformLocation(myShader.Program, "projection");
 
 		//Pasar de matrices al shader.
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proyeccion));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+		greatCube.Rotate(glm::vec3(1.0f, 0.0f, 0.0f));
+		lightCube.Rotate(glm::vec3(0.0f,0.0f,0.0f));
 
 		myShader.Use();
-		//glm::mat4 model = myObj->GetModelMatrix();
-		glm::mat4 model;
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
-		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matrix"), 1, GL_FALSE, glm::value_ptr(model));
-		SpiderModel.Draw(myShader);
-		//myObj->Draw();
+		
+		greatCube.GetModelMatrix(modelGreatCube);
+		tGreatCube = greatCube.GetPosition();
+		glUniform4f(glGetUniformLocation(myShader.Program, "cubeColor"),greatCubeColor.x, greatCubeColor.y, greatCubeColor.z, greatCubeColor.w);
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelGreatCube));
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "transformacion"), 1, GL_FALSE, glm::value_ptr(tGreatCube));
+		greatCube.Draw();
+
+		lightCube.GetModelMatrix(modelLightCube);
+		tLightCube= lightCube.GetPosition();
+		glUniform4f(glGetUniformLocation(myShader.Program, "cubeColor"), lightCubeColor.x, lightCubeColor.y, lightCubeColor.z, lightCubeColor.w);
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelLightCube));
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "transformacion"), 1, GL_FALSE, glm::value_ptr(tLightCube));
+		lightCube.Draw();
 
 		//Swap de buffers.
 		glfwSwapBuffers(window);
@@ -154,40 +142,27 @@ int main()
 	return 0;
 }
 
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
-	if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
-		transparencia = 1;
-	}
-
-	if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
-		transparencia = 0;
-	}
-
 	if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT) {
-		angleX -= 1.0f;
+		
 	}
 
 	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT) {
-		angleX += 1.0f;
+	
 	}
 
-	if (key == GLFW_KEY_UP && action == GLFW_REPEAT) {
-		angleY -= 1.0f;
+	if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+		glDisable(GL_DEPTH_TEST);
 	}
 
-	if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT) {
-		angleY += 1.0f;
+	if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+		glEnable(GL_DEPTH_TEST);
 	}
-
-	if (action == GLFW_PRESS)
-		keys[key] = true;
-
-	if (action == GLFW_RELEASE)
-		keys[key] = false;
 }
 
 

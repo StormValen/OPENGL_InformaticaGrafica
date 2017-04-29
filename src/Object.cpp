@@ -1,6 +1,10 @@
 #include "Object.h"
 
-Object::Object(vec3 scale, vec3 rotation, vec3 position, FigureType typef) :position(position), rotation(rotation), scale(scale) {
+Object::Object(vec3 scale, vec3 rotation, vec3 position, FigureType typef) {
+
+	this->scale = scale;
+	this->rotation = rotation;
+	this->position = position;
 
 	GLfloat VertexBufferObject[] = {
 		//front
@@ -73,24 +77,27 @@ void Object::Draw() {
 	glBindVertexArray(0);
 }
 void Object::Move(vec3 translation) {
-
+	this->position += translation;
 }
 void Object::Rotate(vec3 rota) {
-
+	this->rotation += rota;
 }
 void Object::Scale(vec3 scal) {
+	this->scale += scal;
 }
 
-mat4 Object::GetModelMatrix() {
-
-	glm::mat4 ONLY_COMPILE;
-	return ONLY_COMPILE;
+mat4 Object::GetModelMatrix(glm::mat4 model) {
+	model = glm::translate(model, this->position);
+	model = glm::scale(model, this->scale);
+	return model;
 }
 
-vec3 Object::GetPosition() {
-
-	glm::vec3 ONLY_COMPILE;
-	return ONLY_COMPILE;
+mat4 Object::GetPosition() {
+	glm::mat4 trans;
+	trans = glm::scale(trans, this->scale);
+	trans = glm::translate(trans, this->position);
+	trans = glm::rotate(trans, (GLfloat)glfwGetTime(), this->rotation);
+	return trans;
 }
 
 void Object::Delete() {
