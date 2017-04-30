@@ -19,16 +19,19 @@ public:
 
 	void Draw();
 	void Move(vec3 translation);
-	void Rotate(vec3 rota);
+	void Rotate(vec3 rota, GLfloat angle);
 	void Scale(vec3 scal);
 	void Delete();
 	mat4 GetModelMatrix(glm::mat4 model);
-	mat4 GetPosition();
+	mat4 GetTransMatrix();
+	vec3 GetPosition();
+	GLfloat GetAngleRotation();
+
 
 private:
 	GLuint VBO, VAO, EBO;
 	vec3 position;
 	vec3 scale;
 	vec3 rotation;
-	mat4 trans;
+	GLfloat angleRotation;
 };

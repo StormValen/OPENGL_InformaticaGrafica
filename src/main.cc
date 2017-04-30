@@ -25,10 +25,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-float transparencia;
-float angle{ 0.0f };
-float angleX{ 0.0f };
-float angleY{ 0.0f };
+GLfloat angleR{ 0.0f };
 
 glm::vec3 posicionCamara = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 apuntaCamara = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -39,7 +36,12 @@ GLfloat sensibilidad = 0.05;
 
 Camara MyCamera(posicionCamara, apuntaCamara, sensibilidad,fov);
 
-//Object *random = new Object(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
+GLboolean tPos = false;
+GLboolean tRot = false;
+glm::vec3 movimiento = glm::vec3(0.0f);
+glm::vec3 rotacion = glm::vec3(0.0f);
+
+glm::vec3 lightColor = glm::vec3(1.0f);
 
 int main()
 {
@@ -74,19 +76,22 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//Variable Shader.
-	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
+	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/PhongFragmentShader.fragmentshader");
+	Shader lampShader("./src/LampVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//Cubo grande.
-	Object greatCube(glm::vec3(0.5f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
-	glm::vec4 greatCubeColor(0.4f, 0.2f, 0.5f, 0.5f);
+	Object greatCube(glm::vec3(0.7f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
+	glm::vec3 greatCubeColor = glm::vec3(1.0f, 0.31f, 0.5f);
 	glm::mat4 modelGreatCube;
 	glm::mat4 tGreatCube;
 
 	//Cubo luz.
-	Object lightCube(glm::vec3(0.1f), glm::vec3(0.00001f), glm::vec3(0.0f), Object::cube);
-	glm::vec4 lightCubeColor(1.0f);
+	Object lightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(1.0f), Object::cube);
+	glm::vec3 lightCubeColor = glm::vec3(1.0f);
 	glm::mat4 modelLightCube;
 	glm::mat4 tLightCube;
+
+	greatCube.Rotate(glm::vec3(1.0f, 1.0f, 1.0f),angleR);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -102,11 +107,18 @@ int main()
 		//Actualizacion camara.
 		MyCamera.DoMovement(window);
 
+		if (tPos) {
+			greatCube.Move(movimiento);
+			tPos = false;
+		}
+
 		glm::mat4 view;
 		view = MyCamera.lookAt();
 		glm::mat4 projection;
 		projection = glm::perspective(MyCamera.GetFOV(), (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
 
+		myShader.Use();
+		
 		GLint modelLoc = glGetUniformLocation(myShader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(myShader.Program, "view");
 		GLint projLoc = glGetUniformLocation(myShader.Program, "projection");
@@ -114,24 +126,27 @@ int main()
 		//Pasar de matrices al shader.
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(greatCube.GetModelMatrix(modelGreatCube)));
 
-		greatCube.Rotate(glm::vec3(1.0f, 0.0f, 0.0f));
-		lightCube.Rotate(glm::vec3(0.0f,0.0f,0.0f));
-
-		myShader.Use();
-		
-		greatCube.GetModelMatrix(modelGreatCube);
-		tGreatCube = greatCube.GetPosition();
-		glUniform4f(glGetUniformLocation(myShader.Program, "cubeColor"),greatCubeColor.x, greatCubeColor.y, greatCubeColor.z, greatCubeColor.w);
-		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelGreatCube));
+		tGreatCube = greatCube.GetTransMatrix();
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "transformacion"), 1, GL_FALSE, glm::value_ptr(tGreatCube));
+
+		glUniform3f(glGetUniformLocation(myShader.Program, "cubeColor"),greatCubeColor.x, greatCubeColor.y, greatCubeColor.z);
+		glUniform3f(glGetUniformLocation(myShader.Program, "lightColor"), lightColor.x, lightColor.y, lightColor.z);
 		greatCube.Draw();
 
-		lightCube.GetModelMatrix(modelLightCube);
-		tLightCube= lightCube.GetPosition();
-		glUniform4f(glGetUniformLocation(myShader.Program, "cubeColor"), lightCubeColor.x, lightCubeColor.y, lightCubeColor.z, lightCubeColor.w);
-		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelLightCube));
-		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "transformacion"), 1, GL_FALSE, glm::value_ptr(tLightCube));
+		lampShader.Use();
+
+		modelLoc = glGetUniformLocation(lampShader.Program, "model");
+		viewLoc = glGetUniformLocation(lampShader.Program, "view");
+		projLoc = glGetUniformLocation(lampShader.Program, "projection");
+
+		//Pasar de matrices al shader.
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(lightCube.GetModelMatrix(modelLightCube)));
+
+		glUniform3f(glGetUniformLocation(lampShader.Program, "lightColor"), lightColor.x,  lightColor.y , lightColor.z);
 		lightCube.Draw();
 
 		//Swap de buffers.
@@ -148,20 +163,42 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
-	if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT) {
-		
+	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+		tPos = true;
+		movimiento = glm::vec3(-0.05f, 0.0f, 0.0f);
 	}
 
-	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT) {
-	
+	if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+		tPos = true;
+		movimiento = glm::vec3(0.05f, 0.0f, 0.0f);
 	}
 
-	if (key == GLFW_KEY_O && action == GLFW_PRESS) {
-		glDisable(GL_DEPTH_TEST);
+	if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+		tPos = true;
+		movimiento = glm::vec3(0.0f, 0.05f, 0.0f);
 	}
 
-	if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-		glEnable(GL_DEPTH_TEST);
+	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+		tPos = true;
+		movimiento = glm::vec3(0.0f, -0.05f, 0.0f);
+	}
+	if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) {
+		tRot = true;
+		rotacion = glm::vec3(0.0f,1.0f,0.0f);
+	}
+	if (key == GLFW_KEY_KP_4 && action == GLFW_PRESS) {
+		tRot = true;
+		angleR = 20.0f;
+		rotacion = glm::vec3(1.0f, 0.0f, 0.0f);
+	}
+	if (key == GLFW_KEY_KP_6 && action == GLFW_PRESS) {
+		tRot = true;
+		rotacion = glm::vec3(1.0f, 0.0f, 0.0f);
+	}
+	if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) {
+		tRot = true;
+		angleR += 20.0f;
+		rotacion = glm::vec3(0.0f, 1.0f, 0.0f);
 	}
 }
 
