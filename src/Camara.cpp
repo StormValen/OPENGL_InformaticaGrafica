@@ -19,6 +19,10 @@ Camara::Camara(glm::vec3 position, glm::vec3 direction, GLfloat sensivity, GLflo
 	this->PITCH = 0.0f;
 }
 
+glm::vec3 Camara::GetPosition() {
+	return this->cameraPos;
+}
+
 void Camara::DoMovement(GLFWwindow * window) {
 	GLfloat currTime = glfwGetTime();
 	Deltatime = currTime - Lastframe;

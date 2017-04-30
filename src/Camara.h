@@ -27,4 +27,5 @@ public:
 	void MouseScroll(GLFWwindow *window, double xScroll, double yScroll);
 	glm::mat4 lookAt();
 	GLfloat GetFOV();
+	glm::vec3 GetPosition();
 };

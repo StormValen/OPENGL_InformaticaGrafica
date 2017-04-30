@@ -42,6 +42,7 @@ glm::vec3 movimiento = glm::vec3(0.0f);
 glm::vec3 rotacion = glm::vec3(0.0f);
 
 glm::vec3 lightColor = glm::vec3(1.0f);
+glm::vec3 lightPosition;
 
 int main()
 {
@@ -93,6 +94,9 @@ int main()
 
 	greatCube.Rotate(glm::vec3(1.0f, 1.0f, 1.0f),angleR);
 
+
+	lightPosition = lightCube.GetPosition();
+
 	while (!glfwWindowShouldClose(window))
 	{
 		//Color de fondo.
@@ -107,8 +111,17 @@ int main()
 		//Actualizacion camara.
 		MyCamera.DoMovement(window);
 
+
+		////////// ILUMINACION
+
+		//////////
+
+
+
+
 		if (tPos) {
 			greatCube.Move(movimiento);
+
 			tPos = false;
 		}
 
@@ -133,6 +146,8 @@ int main()
 
 		glUniform3f(glGetUniformLocation(myShader.Program, "cubeColor"),greatCubeColor.x, greatCubeColor.y, greatCubeColor.z);
 		glUniform3f(glGetUniformLocation(myShader.Program, "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+		glUniform3f(glGetUniformLocation(myShader.Program, "lightPos"), lightPosition.x, lightPosition.y, lightPosition.z);
+		glUniform3f(glGetUniformLocation(myShader.Program, "viewPos"), MyCamera.GetPosition().x, MyCamera.GetPosition().y, MyCamera.GetPosition().z);
 		greatCube.Draw();
 
 		lampShader.Use();
