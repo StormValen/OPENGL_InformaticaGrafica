@@ -77,7 +77,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//Variable Shader.
-	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/PhongFragmentShader.fragmentshader");
+	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/PhongFocalFragmentShader.fragmentshader");
 	Shader lampShader("./src/LampVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//Cubo grande.
@@ -92,7 +92,7 @@ int main()
 	glm::mat4 modelLightCube;
 	glm::mat4 tLightCube;
 
-	greatCube.Rotate(glm::vec3(1.0f, 1.0f, 1.0f),angleR);
+	greatCube.Rotate(glm::vec3(1.0f, 1.0f, 1.0f));
 
 
 	lightPosition = lightCube.GetPosition();
@@ -111,17 +111,8 @@ int main()
 		//Actualizacion camara.
 		MyCamera.DoMovement(window);
 
-
-		////////// ILUMINACION
-
-		//////////
-
-
-
-
 		if (tPos) {
 			greatCube.Move(movimiento);
-
 			tPos = false;
 		}
 
@@ -198,22 +189,16 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		movimiento = glm::vec3(0.0f, -0.05f, 0.0f);
 	}
 	if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) {
-		tRot = true;
-		rotacion = glm::vec3(0.0f,1.0f,0.0f);
+
 	}
 	if (key == GLFW_KEY_KP_4 && action == GLFW_PRESS) {
-		tRot = true;
-		angleR = 20.0f;
-		rotacion = glm::vec3(1.0f, 0.0f, 0.0f);
+
 	}
-	if (key == GLFW_KEY_KP_6 && action == GLFW_PRESS) {
-		tRot = true;
-		rotacion = glm::vec3(1.0f, 0.0f, 0.0f);
+	if (key == GLFW_KEY_KP_3 && action == GLFW_PRESS) {
+		tRot = false;
 	}
 	if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) {
 		tRot = true;
-		angleR += 20.0f;
-		rotacion = glm::vec3(0.0f, 1.0f, 0.0f);
 	}
 }
 

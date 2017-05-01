@@ -85,7 +85,7 @@ void Object::Move(vec3 translation) {
 	this->position += translation;
 }
 
-void Object::Rotate(vec3 rota, GLfloat angle) {
+void Object::Rotate(vec3 rota) {
 	this->rotation += rota;
 }
 
@@ -103,7 +103,7 @@ mat4 Object::GetTransMatrix(){
 	glm::mat4 trans;
 	trans = glm::scale(trans, this->scale);
 	trans = glm::translate(trans, this->position);
-	trans = glm::rotate(trans, GetAngleRotation(), this->rotation);
+	trans = glm::rotate(trans, 0.0f, this->rotation);
 	return trans;
 }
 

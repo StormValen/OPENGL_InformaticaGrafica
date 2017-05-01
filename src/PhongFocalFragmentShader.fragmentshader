@@ -1,0 +1,48 @@
+#version 330 core
+out vec4 color;
+
+in vec3 FragPos;  
+in vec3 Normal;  
+  
+uniform vec3 lightPos; 
+uniform vec3 viewPos;
+uniform vec3 lightColor;
+uniform vec3 cubeColor;
+
+void main()
+{
+
+	float Phi = 0.2; //apertura del foco
+	vec3 lightDir = normalize(lightPos - FragPos);
+	float Theta = dot(lightDir,normalize(-lightPos));
+	float d = length(lightPos-FragPos);
+	float Fatt = 1/(1.0+0.0014*d+0.000007*pow(d,2));
+
+	if(Theta > Phi){
+		float ambientStrength = 0.1f;
+		vec3 ambient = ambientStrength * lightColor;
+		vec3 result = (Fatt*ambient) * cubeColor;
+		color = vec4(result, 1.0f);
+	}
+	else{
+		// Ambient
+		float ambientStrength = 0.1f;
+		vec3 ambient = ambientStrength * lightColor;
+  	
+		// Diffuse 
+		vec3 norm = normalize(Normal);
+		
+		float diff = max(dot(norm, lightDir), 0.0);
+		vec3 diffuse = diff * lightColor;
+    
+		// Specular
+		float specularStrength = 0.5f;
+		vec3 viewDir = normalize(viewPos - FragPos);
+		vec3 reflectDir = reflect(-lightDir, norm);  
+		float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+		vec3 specular = specularStrength * spec * lightColor;  
+		
+		vec3 result = (Fatt*(ambient + diffuse + specular)) * cubeColor;
+		color = vec4(result, 1.0f);
+	}
+} 
