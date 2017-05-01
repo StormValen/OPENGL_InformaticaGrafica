@@ -77,7 +77,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//Variable Shader.
-	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/PhongFocalFragmentShader.fragmentshader");
+	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/PhongPuntualFragmentShader.fragmentshader");
 	Shader lampShader("./src/LampVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//Cubo grande.
@@ -100,7 +100,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		//Color de fondo.
-		glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 		//Limpiar ColorBuffer y ZBuffer.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
