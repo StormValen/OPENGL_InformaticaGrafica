@@ -13,7 +13,7 @@ uniform vec3 lightDirection;
 void main()
 {
 
-	float Phi = cos(radians(12.0f)); //apertura del foco
+	float Phi = cos(radians(45.0f)); //apertura del foco
 	vec3 lightDir = normalize(lightPos - FragPos);
 	float Theta = dot(lightDir,normalize(-lightDirection));
 	float d = length(lightPos-FragPos);

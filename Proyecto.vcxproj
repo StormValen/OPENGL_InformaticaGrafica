@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="src\Camara.cpp" />
     <ClCompile Include="src\main.cc" />
+    <ClCompile Include="src\material.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Object.cpp" />
@@ -28,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camara.h" />
+    <ClInclude Include="src\material.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Object.h" />

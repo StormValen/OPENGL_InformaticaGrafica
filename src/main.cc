@@ -18,6 +18,7 @@
 #include "Object.h"
 #include "Model.h"
 #include "Camara.h"
+#include "material.h"
 
 const GLuint WIDTH = 1280, HEIGHT = 720;
 
@@ -86,7 +87,6 @@ int main()
 
 	//Cubo grande.
 	greatCube = new Object(glm::vec3(0.7f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
-	//Object greatCube(glm::vec3(0.7f), glm::vec3(0.0f), glm::vec3(1.0f), Object::cube);
 	glm::vec3 greatCubeColor = glm::vec3(1.0f, 0.31f, 0.5f);
 	glm::mat4 modelGreatCube;
 	glm::mat4 tGreatCube;
@@ -97,10 +97,9 @@ int main()
 	glm::mat4 modelLightCube;
 	glm::mat4 tLightCube;
 
-	//greatCube->Rotate(glm::vec3(1.0f, 1.0f, 0.0f));
-
-
 	lightPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	Material material("./gph/Materials/difuso.png", "./gph/Materials/especular.png", 0.5);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -109,6 +108,10 @@ int main()
 
 		//Limpiar ColorBuffer y ZBuffer.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		material.ActivateTextures();
+		material.SetMaterial(&myShader);
+		material.SetShininess(&myShader);
 
 		//Comporavar si alguna de las texlas ha sido pulsada.
 		glfwPollEvents();
