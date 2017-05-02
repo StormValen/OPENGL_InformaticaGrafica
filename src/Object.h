@@ -7,6 +7,10 @@
 
 using namespace glm;
 
+enum Direction {
+	UP, DOWN, LEFT, RIGHT
+};
+
 class Object {
 
 public:
@@ -19,19 +23,16 @@ public:
 
 	void Draw();
 	void Move(vec3 translation);
-	void Rotate(vec3 rota);
+	void Rotate(Direction Dir);
 	void Scale(vec3 scal);
 	void Delete();
 	mat4 GetModelMatrix(glm::mat4 model);
-	mat4 GetTransMatrix();
 	vec3 GetPosition();
-	GLfloat GetAngleRotation();
-
 
 private:
 	GLuint VBO, VAO, EBO;
 	vec3 position;
 	vec3 scale;
 	vec3 rotation;
-	GLfloat angleRotation;
+	GLfloat angleY, angleX;
 };

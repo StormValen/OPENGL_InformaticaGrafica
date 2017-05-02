@@ -5,8 +5,8 @@ Object::Object(vec3 scale, vec3 rotation, vec3 position, FigureType typef) {
 	this->scale = scale;
 	this->rotation = rotation;
 	this->position = position;
-	this->angleRotation = 0.0f;
-
+	this->angleX = 0;
+	this->angleY = 0;
 	GLfloat VertexBufferObject[] = {
 		//front
 		1.0f ,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
@@ -85,9 +85,21 @@ void Object::Move(vec3 translation) {
 	this->position += translation;
 }
 
-void Object::Rotate(vec3 rota) {
-	this->rotation += rota;
+void Object::Rotate(Direction Dir) {
+	if (Dir == UP) {
+		this->angleY += 2;
+	}
+	if (Dir == DOWN) {
+		this->angleY += -2;
+	}
+	if (Dir == LEFT) {
+		this->angleX += 2;
+	}
+	if (Dir == RIGHT) {
+		this->angleX += -2;
+	}
 }
+
 
 void Object::Scale(vec3 scal) {
 	this->scale += scal;
@@ -96,19 +108,10 @@ void Object::Scale(vec3 scal) {
 mat4 Object::GetModelMatrix(glm::mat4 model) {
 	model = glm::translate(model, this->position);
 	model = glm::scale(model, this->scale);
+
+	model = glm::rotate(model, glm::radians(this->angleY), glm::vec3(0.0f,1.0f,0.0f));
+	model = glm::rotate(model, glm::radians(this->angleX), glm::vec3(1.0f, 0.0f, 0.0f));
 	return model;
-}
-
-mat4 Object::GetTransMatrix(){
-	glm::mat4 trans;
-	trans = glm::scale(trans, this->scale);
-	trans = glm::translate(trans, this->position);
-	trans = glm::rotate(trans, 0.0f, this->rotation);
-	return trans;
-}
-
-GLfloat Object::GetAngleRotation() {
-	return this->angleRotation;
 }
 
 vec3 Object::GetPosition() {

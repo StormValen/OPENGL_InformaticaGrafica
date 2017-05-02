@@ -44,6 +44,10 @@ glm::vec3 rotacion = glm::vec3(0.0f);
 glm::vec3 lightColor = glm::vec3(1.0f);
 glm::vec3 lightPosition;
 
+Object *greatCube;
+
+
+
 int main()
 {
 	//GLFW
@@ -81,21 +85,22 @@ int main()
 	Shader lampShader("./src/LampVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//Cubo grande.
-	Object greatCube(glm::vec3(0.7f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
+	greatCube = new Object(glm::vec3(0.7f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
+	//Object greatCube(glm::vec3(0.7f), glm::vec3(0.0f), glm::vec3(1.0f), Object::cube);
 	glm::vec3 greatCubeColor = glm::vec3(1.0f, 0.31f, 0.5f);
 	glm::mat4 modelGreatCube;
 	glm::mat4 tGreatCube;
 
 	//Cubo luz.
-	Object lightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(1.0f), Object::cube);
+	Object lightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(0.0f), Object::cube);
 	glm::vec3 lightCubeColor = glm::vec3(1.0f);
 	glm::mat4 modelLightCube;
 	glm::mat4 tLightCube;
 
-	greatCube.Rotate(glm::vec3(1.0f, 1.0f, 1.0f));
+	//greatCube->Rotate(glm::vec3(1.0f, 1.0f, 0.0f));
 
 
-	lightPosition = lightCube.GetPosition();
+	lightPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -111,11 +116,6 @@ int main()
 		//Actualizacion camara.
 		MyCamera.DoMovement(window);
 
-		if (tPos) {
-			greatCube.Move(movimiento);
-			tPos = false;
-		}
-
 		glm::mat4 view;
 		view = MyCamera.lookAt();
 		glm::mat4 projection;
@@ -130,16 +130,14 @@ int main()
 		//Pasar de matrices al shader.
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(greatCube.GetModelMatrix(modelGreatCube)));
-
-		tGreatCube = greatCube.GetTransMatrix();
-		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "transformacion"), 1, GL_FALSE, glm::value_ptr(tGreatCube));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(greatCube->GetModelMatrix(modelGreatCube)));
 
 		glUniform3f(glGetUniformLocation(myShader.Program, "cubeColor"),greatCubeColor.x, greatCubeColor.y, greatCubeColor.z);
 		glUniform3f(glGetUniformLocation(myShader.Program, "lightColor"), lightColor.x, lightColor.y, lightColor.z);
 		glUniform3f(glGetUniformLocation(myShader.Program, "lightPos"), lightPosition.x, lightPosition.y, lightPosition.z);
+		glUniform3f(glGetUniformLocation(myShader.Program, "lightDirection"),0.0f,-1.0f,0.0f);
 		glUniform3f(glGetUniformLocation(myShader.Program, "viewPos"), MyCamera.GetPosition().x, MyCamera.GetPosition().y, MyCamera.GetPosition().z);
-		greatCube.Draw();
+		greatCube->Draw();
 
 		lampShader.Use();
 
@@ -169,36 +167,36 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
-	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
-		tPos = true;
-		movimiento = glm::vec3(-0.05f, 0.0f, 0.0f);
+	if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT) {
+		movimiento = glm::vec3(-0.025f, 0.0f, 0.0f);
+		greatCube->Move(movimiento);
 	}
 
-	if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-		tPos = true;
-		movimiento = glm::vec3(0.05f, 0.0f, 0.0f);
+	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT) {
+		movimiento = glm::vec3(0.025f, 0.0f, 0.0f);
+		greatCube->Move(movimiento);
 	}
 
-	if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
-		tPos = true;
-		movimiento = glm::vec3(0.0f, 0.05f, 0.0f);
+	if (key == GLFW_KEY_UP && action == GLFW_REPEAT) {
+		movimiento = glm::vec3(0.0f, 0.025f, 0.0f);
+		greatCube->Move(movimiento);
 	}
 
-	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
-		tPos = true;
-		movimiento = glm::vec3(0.0f, -0.05f, 0.0f);
+	if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT) {
+		movimiento = glm::vec3(0.0f, -0.025f, 0.0f);
+		greatCube->Move(movimiento);
 	}
-	if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) {
-
+	if (key == GLFW_KEY_KP_8 && action == GLFW_REPEAT) {
+		greatCube->Rotate(UP);
 	}
-	if (key == GLFW_KEY_KP_4 && action == GLFW_PRESS) {
-
+	if (key == GLFW_KEY_KP_4 && action == GLFW_REPEAT) {
+		greatCube->Rotate(LEFT);
 	}
-	if (key == GLFW_KEY_KP_3 && action == GLFW_PRESS) {
-		tRot = false;
+	if (key == GLFW_KEY_KP_6 && action == GLFW_REPEAT) {
+		greatCube->Rotate(RIGHT);
 	}
-	if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) {
-		tRot = true;
+	if (key == GLFW_KEY_KP_2 && action == GLFW_REPEAT) {
+		greatCube->Rotate(DOWN);
 	}
 }
 
