@@ -82,7 +82,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//Variable Shader.
-	Shader myShader("./src/MaterialVertexShader.vertexshader", "./src/PhongMaterialFragmentShader.fragmentshader");
+	Shader myShader("./src/MaterialVertexShader.vertexshader", "./src/PhongFocalFragmentShader.fragmentshader");
 	Shader lampShader("./src/LampVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//Cubo grande.

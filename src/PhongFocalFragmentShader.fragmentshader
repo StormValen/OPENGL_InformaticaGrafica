@@ -18,10 +18,13 @@ void main()
 	float Theta = dot(lightDir,normalize(-lightDirection));
 	float d = length(lightPos-FragPos);
 	float Fatt = 1/(1.0+0.7*d+1.8*pow(d,2));
+	
+	float epsilon = cos(Phi)-cos(20.0f);
+	float Intensidad = clamp((Theta - Phi)/epsilon, 0,1);
 
 	
 	
-	if(Theta > Phi){
+	//if(Theta > Phi){
 		// Ambient
 		float ambientStrength = 0.1f;
 		vec3 ambient = ambientStrength * lightColor;
@@ -39,14 +42,17 @@ void main()
 		float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
 		vec3 specular = specularStrength * spec * lightColor;  
 		
+		diffuse *= Intensidad;
+		specular *= Intensidad;
+		
 		vec3 result = (Fatt*(ambient + diffuse + specular)) * cubeColor;
 		color = vec4(result, 1.0f);
-	}
-	else{
-		float ambientStrength = 0.1f;
-		vec3 ambient = ambientStrength * lightColor;
-		vec3 result = (Fatt*ambient) * cubeColor;
-		color = vec4(result, 1.0f);
+	//}
+	//else{
+	//	float ambientStrength = 0.1f;
+		//vec3 ambient = ambientStrength * lightColor;
+		//vec3 result = (Fatt*ambient) * cubeColor;
+		//color =  vec4(result, 1.0f);
 		
-	}
+	//}
 } 
