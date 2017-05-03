@@ -28,7 +28,7 @@ Material::Material(char *DiffPath, char*SpectPath, float Shini){
 
 	int width2, height2;
 	unsigned char* image2 = SOIL_load_image(SpectPath, &width2, &height2, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGB, GL_UNSIGNED_BYTE, image2);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image2);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -41,11 +41,12 @@ Material::~Material(){
 }
 
 void Material::SetMaterial(Shader *shad) {
-	glUniform1i(glGetUniformLocation(shad->Program, "ourTexture1"), 0);
+	glUniform1i(glGetUniformLocation(shad->Program, "material.texDifuse"), 1);
+	glUniform1i(glGetUniformLocation(shad->Program, "material.texSpecular"), 1);
 }
 
 void Material::SetShininess(Shader *shad) {
-	glUniform1i(glGetUniformLocation(shad->Program, "ourTexture2"), 1);
+	glUniform1f(glGetUniformLocation(shad->Program, "material.texShinines"), 200.0f);
 }
 
 void Material::ActivateTextures() {

@@ -82,7 +82,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//Variable Shader.
-	Shader myShader("./src/TextureVertexShader.vertexshader", "./src/PhongPuntualFragmentShader.fragmentshader");
+	Shader myShader("./src/MaterialVertexShader.vertexshader", "./src/PhongMaterialFragmentShader.fragmentshader");
 	Shader lampShader("./src/LampVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//Cubo grande.
@@ -99,7 +99,7 @@ int main()
 
 	lightPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	Material material("./gph/Materials/difuso.png", "./gph/Materials/especular.png", 0.5);
+	Material material("./gph/Materials/difuso.png", "./gph/Materials/especular.png", 200.0f);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -108,10 +108,6 @@ int main()
 
 		//Limpiar ColorBuffer y ZBuffer.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		material.ActivateTextures();
-		material.SetMaterial(&myShader);
-		material.SetShininess(&myShader);
 
 		//Comporavar si alguna de las texlas ha sido pulsada.
 		glfwPollEvents();
@@ -125,6 +121,10 @@ int main()
 		projection = glm::perspective(MyCamera.GetFOV(), (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
 
 		myShader.Use();
+
+		material.ActivateTextures();
+		material.SetMaterial(&myShader);
+		material.SetShininess(&myShader);
 		
 		GLint modelLoc = glGetUniformLocation(myShader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(myShader.Program, "view");
