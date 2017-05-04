@@ -19,14 +19,13 @@
 #include "Model.h"
 #include "Camara.h"
 #include "material.h"
+#include "Light.h"
 
 const GLuint WIDTH = 1280, HEIGHT = 720;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
-GLfloat angleR{ 0.0f };
 
 glm::vec3 posicionCamara = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 apuntaCamara = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -37,17 +36,8 @@ GLfloat sensibilidad = 0.05;
 
 Camara MyCamera(posicionCamara, apuntaCamara, sensibilidad,fov);
 
-GLboolean tPos = false;
-GLboolean tRot = false;
-glm::vec3 movimiento = glm::vec3(0.0f);
-glm::vec3 rotacion = glm::vec3(0.0f);
-
-glm::vec3 lightColor = glm::vec3(1.0f);
-glm::vec3 lightPosition;
-
 Object *greatCube;
-
-
+Object *miniCube;
 
 int main()
 {
@@ -61,7 +51,7 @@ int main()
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	//Crear objeto ventana
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Informatica_Grafica", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Informatica_Grafica_ValentinGutierrez", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	//Raton habilitado sin mostrarse
@@ -82,27 +72,48 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//Variable Shader.
-	Shader myShader("./src/MaterialVertexShader.vertexshader", "./src/PhongFocalFragmentShader.fragmentshader");
+	Shader myShader("./src/VertexShaderPhongTexture.vs", "./src/FragmentShaderPhongTexture.fs");
 	Shader lampShader("./src/LampVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
 	//Cubo grande.
-	greatCube = new Object(glm::vec3(0.7f), glm::vec3(0.0f), glm::vec3(0.0f), Object::cube);
+	greatCube = new Object(glm::vec3(0.7f), glm::vec3(0.0f), glm::vec3(0.0f,-1.0f,0.0f), Object::cube);
 	glm::vec3 greatCubeColor = glm::vec3(1.0f, 0.31f, 0.5f);
 	glm::mat4 modelGreatCube;
-	glm::mat4 tGreatCube;
 
-	//Cubo luz.
+	//Mini cube.
+	miniCube = new Object(glm::vec3(0.4f), glm::vec3(0.0f), glm::vec3(1.0f, 0.0f, -0.5f), Object::miniCube);
+	glm::vec3 miniCubeColor = glm::vec3(0.0f,0.31f,0.5f);
+	glm::mat4 modelMiniCube;
+
+	//Cubos luz.
 	Object lightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(0.0f), Object::cube);
-	glm::vec3 lightCubeColor = glm::vec3(1.0f);
 	glm::mat4 modelLightCube;
-	glm::mat4 tLightCube;
 
-	lightPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+	Object greenLightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(0.5f,-0.5f,0.5f), Object::cube);
+	glm::mat4 modelGreenLightCube;
+
+	Object yellowLightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(0.5f, 1.f, -1.0f), Object::cube);
+	glm::mat4 modelYellowLightCube;
+
+	Object redLightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(0.0f, 3.f, 0.0f), Object::cube);
+	glm::mat4 modelRedLightCube;
+
+	Object placeHolderDirectionalLight(glm::vec3(0.1f),glm::vec3(1.0f),glm::vec3(-7.0f,-7.0f,1.0f), Object::cube);
+	glm::mat4 modelPlaceHolderDirectionalLight;
+
+	//Objetos Luz.
+	Light LuzAzul(lightCube.GetPosition(), glm::vec3(0.0f, -1.0f, 0.0f), 0.1f, 5.0f, 5.0f, Light::POINT, 0, glm::vec3(0.0f, 0.5f, 1.0f));
+	Light LuzVerde(greenLightCube.GetPosition(), glm::vec3(0.0f, -1.0f, 0.0f), 0.1f, 5.0f, 5.0f, Light::POINT, 1, glm::vec3(0.0f, 1.0f, 0.5f));
+
+	Light LuzAmarilla(yellowLightCube.GetPosition(), glm::vec3(0.0f,-1.0f,0.0f), 0.1f, 20.0f, 20.0f, Light::SPOT, 0 , glm::vec3(1.0f,1.0f,0.0f));
+	Light LuzRoja(redLightCube.GetPosition(), glm::vec3(0.0f, -1.0f, 0.0f), 0.1f, 20.0f, 5.0f, Light::SPOT, 2, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	Light LuzBlancaDireccional(placeHolderDirectionalLight.GetPosition(), glm::vec3(1.0f, 1.0f, 0.0f), 0.1f, 0.5f, 5.0f, Light::DIRECTIONAL, 0, glm::vec3(1.0f, 1.0f, 1.0f));
 
 	Material material("./gph/Materials/difuso.png", "./gph/Materials/especular.png", 200.0f);
+	Material materialA("./gph/Materials/camo.jpg", "./gph/Materials/especular2.png", 200.0f);
 
-	while (!glfwWindowShouldClose(window))
-	{
+	while (!glfwWindowShouldClose(window)) {
 		//Color de fondo.
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -120,7 +131,7 @@ int main()
 		glm::mat4 projection;
 		projection = glm::perspective(MyCamera.GetFOV(), (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
 
-		myShader.Use();
+		myShader.Use(); //DRAW BIG BUE
 
 		material.ActivateTextures();
 		material.SetMaterial(&myShader);
@@ -136,13 +147,69 @@ int main()
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(greatCube->GetModelMatrix(modelGreatCube)));
 
 		glUniform3f(glGetUniformLocation(myShader.Program, "cubeColor"),greatCubeColor.x, greatCubeColor.y, greatCubeColor.z);
-		glUniform3f(glGetUniformLocation(myShader.Program, "lightColor"), lightColor.x, lightColor.y, lightColor.z);
-		glUniform3f(glGetUniformLocation(myShader.Program, "lightPos"), lightPosition.x, lightPosition.y, lightPosition.z);
-		glUniform3f(glGetUniformLocation(myShader.Program, "lightDirection"),0.0f,-1.0f,0.0f);
-		glUniform3f(glGetUniformLocation(myShader.Program, "viewPos"), MyCamera.GetPosition().x, MyCamera.GetPosition().y, MyCamera.GetPosition().z);
+
+		LuzAzul.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzAzul.SetAperture(20.0f, 45.0f);
+		LuzAzul.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzVerde.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzVerde.SetAperture(20.0f, 45.0f);
+		LuzVerde.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzAmarilla.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzAmarilla.SetAperture(20.0f, 45.0f);
+		LuzAmarilla.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzRoja.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzRoja.SetAperture(10.0f, 20.0f);
+		LuzRoja.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzBlancaDireccional.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzBlancaDireccional.SetAperture(20.0f, 45.0f);
+		LuzBlancaDireccional.SetLight(&myShader, MyCamera.GetPosition());
+
 		greatCube->Draw();
 
-		lampShader.Use();
+		myShader.Use(); //DRAW MINI CUBE
+
+		materialA.ActivateTextures();
+		materialA.SetMaterial(&myShader);
+		materialA.SetShininess(&myShader);
+
+		modelLoc = glGetUniformLocation(myShader.Program, "model");
+		viewLoc = glGetUniformLocation(myShader.Program, "view");
+		projLoc = glGetUniformLocation(myShader.Program, "projection");
+
+		//Pasar de matrices al shader.
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(miniCube->GetModelMatrix(modelMiniCube)));
+
+		glUniform3f(glGetUniformLocation(myShader.Program, "cubeColor"), miniCubeColor.x, miniCubeColor.y, miniCubeColor.z);
+
+		LuzAzul.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzAzul.SetAperture(20.0f, 45.0f);
+		LuzAzul.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzVerde.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzVerde.SetAperture(20.0f, 45.0f);
+		LuzVerde.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzAmarilla.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzAmarilla.SetAperture(20.0f, 45.0f);
+		LuzAmarilla.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzRoja.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzRoja.SetAperture(10.0f, 20.0f);
+		LuzRoja.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzBlancaDireccional.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzBlancaDireccional.SetAperture(20.0f, 45.0f);
+		LuzBlancaDireccional.SetLight(&myShader, MyCamera.GetPosition());
+
+		miniCube->Draw();
+
+		lampShader.Use(); //DRAW BLUE LIGHT CUBE
 
 		modelLoc = glGetUniformLocation(lampShader.Program, "model");
 		viewLoc = glGetUniformLocation(lampShader.Program, "view");
@@ -153,8 +220,64 @@ int main()
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(lightCube.GetModelMatrix(modelLightCube)));
 
-		glUniform3f(glGetUniformLocation(lampShader.Program, "lightColor"), lightColor.x,  lightColor.y , lightColor.z);
+		glUniform3f(glGetUniformLocation(lampShader.Program, "lightColor"), LuzAzul.GetColor().x, LuzAzul.GetColor().y, LuzAzul.GetColor().z);
 		lightCube.Draw();
+
+		lampShader.Use(); //DRAW RED LIGHT CUBE
+
+		modelLoc = glGetUniformLocation(lampShader.Program, "model");
+		viewLoc = glGetUniformLocation(lampShader.Program, "view");
+		projLoc = glGetUniformLocation(lampShader.Program, "projection");
+
+		//Pasar de matrices al shader.
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(redLightCube.GetModelMatrix(modelRedLightCube)));
+
+		glUniform3f(glGetUniformLocation(lampShader.Program, "lightColor"), LuzRoja.GetColor().x, LuzRoja.GetColor().y, LuzRoja.GetColor().z);
+		redLightCube.Draw();
+
+		lampShader.Use(); //DRAW GREEN LIGHT CUBE
+
+		modelLoc = glGetUniformLocation(lampShader.Program, "model");
+		viewLoc = glGetUniformLocation(lampShader.Program, "view");
+		projLoc = glGetUniformLocation(lampShader.Program, "projection");
+
+		//Pasar de matrices al shader.
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(greenLightCube.GetModelMatrix(modelGreenLightCube)));
+
+		glUniform3f(glGetUniformLocation(lampShader.Program, "lightColor"), LuzVerde.GetColor().x, LuzVerde.GetColor().y, LuzVerde.GetColor().z);
+		greenLightCube.Draw();
+
+		lampShader.Use(); //DRAW YELLOW LIGHT CUBE
+
+		modelLoc = glGetUniformLocation(lampShader.Program, "model");
+		viewLoc = glGetUniformLocation(lampShader.Program, "view");
+		projLoc = glGetUniformLocation(lampShader.Program, "projection");
+
+		//Pasar de matrices al shader.
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(yellowLightCube.GetModelMatrix(modelYellowLightCube)));
+
+		glUniform3f(glGetUniformLocation(lampShader.Program, "lightColor"), LuzAmarilla.GetColor().x, LuzAmarilla.GetColor().y, LuzAmarilla.GetColor().z);
+		yellowLightCube.Draw();
+
+		lampShader.Use(); //DRAW DIRECTIONAL LIGHT CUBE
+
+		modelLoc = glGetUniformLocation(lampShader.Program, "model");
+		viewLoc = glGetUniformLocation(lampShader.Program, "view");
+		projLoc = glGetUniformLocation(lampShader.Program, "projection");
+
+		//Pasar de matrices al shader.
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(placeHolderDirectionalLight.GetModelMatrix(modelPlaceHolderDirectionalLight)));
+
+		glUniform3f(glGetUniformLocation(lampShader.Program, "lightColor"), LuzBlancaDireccional.GetColor().x, LuzBlancaDireccional.GetColor().y, LuzBlancaDireccional.GetColor().z);
+		placeHolderDirectionalLight.Draw();
 
 		//Swap de buffers.
 		glfwSwapBuffers(window);
@@ -171,22 +294,22 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
 	if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT) {
-		movimiento = glm::vec3(-0.025f, 0.0f, 0.0f);
+		glm::vec3 movimiento = glm::vec3(-0.025f, 0.0f, 0.0f);
 		greatCube->Move(movimiento);
 	}
 
 	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT) {
-		movimiento = glm::vec3(0.025f, 0.0f, 0.0f);
+		glm::vec3 movimiento = glm::vec3(0.025f, 0.0f, 0.0f);
 		greatCube->Move(movimiento);
 	}
 
 	if (key == GLFW_KEY_UP && action == GLFW_REPEAT) {
-		movimiento = glm::vec3(0.0f, 0.025f, 0.0f);
+		glm::vec3 movimiento = glm::vec3(0.0f, 0.025f, 0.0f);
 		greatCube->Move(movimiento);
 	}
 
 	if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT) {
-		movimiento = glm::vec3(0.0f, -0.025f, 0.0f);
+		glm::vec3 movimiento = glm::vec3(0.0f, -0.025f, 0.0f);
 		greatCube->Move(movimiento);
 	}
 	if (key == GLFW_KEY_KP_8 && action == GLFW_REPEAT) {

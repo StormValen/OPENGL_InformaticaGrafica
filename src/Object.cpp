@@ -7,6 +7,7 @@ Object::Object(vec3 scale, vec3 rotation, vec3 position, FigureType typef) {
 	this->position = position;
 	this->angleX = 0;
 	this->angleY = 0;
+	this->TheType = typef;
 	GLfloat VertexBufferObject[] = {
 		//front
 		0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
@@ -110,8 +111,18 @@ mat4 Object::GetModelMatrix(glm::mat4 model) {
 	model = glm::translate(model, this->position);
 	model = glm::scale(model, this->scale);
 
-	model = glm::rotate(model, glm::radians(this->angleY), glm::vec3(0.0f,1.0f,0.0f));
-	model = glm::rotate(model, glm::radians(this->angleX), glm::vec3(1.0f, 0.0f, 0.0f));
+	switch (TheType)
+	{
+	case cube:
+		model = glm::rotate(model, glm::radians(this->angleY), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(this->angleX), glm::vec3(1.0f, 0.0f, 0.0f));
+		break;
+	case miniCube:
+		model = glm::rotate(model, (GLfloat)glfwGetTime(), glm::vec3(1.0f, 1.0f, 1.0f));
+		break;
+	default:
+		break;
+	}
 	return model;
 }
 
