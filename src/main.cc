@@ -38,6 +38,7 @@ Camara MyCamera(posicionCamara, apuntaCamara, sensibilidad,fov);
 
 Object *greatCube;
 Object *miniCube;
+Object *extCube;
 
 int main()
 {
@@ -75,6 +76,11 @@ int main()
 	Shader myShader("./src/VertexShaderPhongTexture.vs", "./src/FragmentShaderPhongTexture.fs");
 	Shader lampShader("./src/LampVertexShader.vertexshader", "./src/SimpleFragmentShader.fragmentshader");
 
+	//Cubo exterior.
+	extCube = new Object(glm::vec3(4.0f), glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, 0.0f), Object::cube);
+	glm::vec3 extCubeColor = glm::vec3(1.0f, 0.31f, 0.5f);
+	glm::mat4 modelExtCube;
+
 	//Cubo grande.
 	greatCube = new Object(glm::vec3(0.7f), glm::vec3(0.0f), glm::vec3(0.0f,-1.0f,0.0f), Object::cube);
 	glm::vec3 greatCubeColor = glm::vec3(1.0f, 0.31f, 0.5f);
@@ -92,10 +98,10 @@ int main()
 	Object greenLightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(0.5f,-0.5f,0.5f), Object::cube);
 	glm::mat4 modelGreenLightCube;
 
-	Object yellowLightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(0.5f, 1.f, -1.0f), Object::cube);
+	Object yellowLightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(0.5f, 0.8f, -1.0f), Object::cube);
 	glm::mat4 modelYellowLightCube;
 
-	Object redLightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(0.0f, 3.f, 0.0f), Object::cube);
+	Object redLightCube(glm::vec3(0.1f), glm::vec3(1.0f), glm::vec3(-1.0f, 0.0f, 0.0f), Object::cube);
 	glm::mat4 modelRedLightCube;
 
 	Object placeHolderDirectionalLight(glm::vec3(0.1f),glm::vec3(1.0f),glm::vec3(-7.0f,-7.0f,1.0f), Object::cube);
@@ -106,7 +112,7 @@ int main()
 	Light LuzVerde(greenLightCube.GetPosition(), glm::vec3(0.0f, -1.0f, 0.0f), 0.1f, 5.0f, 5.0f, Light::POINT, 1, glm::vec3(0.0f, 1.0f, 0.5f));
 
 	Light LuzAmarilla(yellowLightCube.GetPosition(), glm::vec3(0.0f,-1.0f,0.0f), 0.1f, 20.0f, 20.0f, Light::SPOT, 0 , glm::vec3(1.0f,1.0f,0.0f));
-	Light LuzRoja(redLightCube.GetPosition(), glm::vec3(0.0f, -1.0f, 0.0f), 0.1f, 20.0f, 5.0f, Light::SPOT, 2, glm::vec3(1.0f, 0.0f, 0.0f));
+	Light LuzRoja(redLightCube.GetPosition(), glm::vec3(1.0f, -1.f, -1.0f), 0.1f, 20.0f, 5.0f, Light::SPOT, 2, glm::vec3(1.0f, 0.0f, 0.0f));
 
 	Light LuzBlancaDireccional(placeHolderDirectionalLight.GetPosition(), glm::vec3(1.0f, 1.0f, 0.0f), 0.1f, 0.5f, 5.0f, Light::DIRECTIONAL, 0, glm::vec3(1.0f, 1.0f, 1.0f));
 
@@ -120,6 +126,10 @@ int main()
 		//Limpiar ColorBuffer y ZBuffer.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		glFrontFace(GL_CCW);
+
 		//Comporavar si alguna de las texlas ha sido pulsada.
 		glfwPollEvents();
 		
@@ -131,7 +141,7 @@ int main()
 		glm::mat4 projection;
 		projection = glm::perspective(MyCamera.GetFOV(), (float)WIDTH / (float)HEIGHT, 0.1f, 1000.0f);
 
-		myShader.Use(); //DRAW BIG BUE
+		myShader.Use(); //DRAW EXTERIOR CUBE.
 
 		material.ActivateTextures();
 		material.SetMaterial(&myShader);
@@ -140,6 +150,47 @@ int main()
 		GLint modelLoc = glGetUniformLocation(myShader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(myShader.Program, "view");
 		GLint projLoc = glGetUniformLocation(myShader.Program, "projection");
+
+		//Pasar de matrices al shader.
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(extCube->GetModelMatrix(modelExtCube)));
+
+		glUniform3f(glGetUniformLocation(myShader.Program, "cubeColor"),extCubeColor.x, extCubeColor.y, extCubeColor.z);
+
+		LuzAzul.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzAzul.SetAperture(20.0f, 45.0f);
+		LuzAzul.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzVerde.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzVerde.SetAperture(20.0f, 45.0f);
+		LuzVerde.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzAmarilla.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzAmarilla.SetAperture(20.0f, 45.0f);
+		LuzAmarilla.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzRoja.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzRoja.SetAperture(20.0f, 20.0f);
+		LuzRoja.SetLight(&myShader, MyCamera.GetPosition());
+
+		LuzBlancaDireccional.SetAtt(1.0f, 0.7f, 1.8f);
+		LuzBlancaDireccional.SetAperture(20.0f, 45.0f);
+		LuzBlancaDireccional.SetLight(&myShader, MyCamera.GetPosition());
+
+		extCube->Draw();
+
+		glCullFace(GL_BACK);
+
+		myShader.Use(); //DRAW BIG CUBE
+
+		material.ActivateTextures();
+		material.SetMaterial(&myShader);
+		material.SetShininess(&myShader);
+		
+		modelLoc = glGetUniformLocation(myShader.Program, "model");
+		viewLoc = glGetUniformLocation(myShader.Program, "view");
+		projLoc = glGetUniformLocation(myShader.Program, "projection");
 
 		//Pasar de matrices al shader.
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
@@ -161,7 +212,7 @@ int main()
 		LuzAmarilla.SetLight(&myShader, MyCamera.GetPosition());
 
 		LuzRoja.SetAtt(1.0f, 0.7f, 1.8f);
-		LuzRoja.SetAperture(10.0f, 20.0f);
+		LuzRoja.SetAperture(20.0f, 20.0f);
 		LuzRoja.SetLight(&myShader, MyCamera.GetPosition());
 
 		LuzBlancaDireccional.SetAtt(1.0f, 0.7f, 1.8f);
@@ -200,7 +251,7 @@ int main()
 		LuzAmarilla.SetLight(&myShader, MyCamera.GetPosition());
 
 		LuzRoja.SetAtt(1.0f, 0.7f, 1.8f);
-		LuzRoja.SetAperture(10.0f, 20.0f);
+		LuzRoja.SetAperture(20.0f, 20.0f);
 		LuzRoja.SetLight(&myShader, MyCamera.GetPosition());
 
 		LuzBlancaDireccional.SetAtt(1.0f, 0.7f, 1.8f);
