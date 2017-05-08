@@ -119,6 +119,10 @@ int main()
 	Material material("./gph/Materials/difuso.png", "./gph/Materials/especular.png", 200.0f);
 	Material materialA("./gph/Materials/camo.jpg", "./gph/Materials/especular2.png", 200.0f);
 
+	Model spider("./gph/spider/spider.obj");
+	Model toro("./gph/spider/WusonOBJ.obj");
+	Model algo("./gph/spider/table.obj");
+
 	while (!glfwWindowShouldClose(window)) {
 		//Color de fondo.
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -181,6 +185,33 @@ int main()
 		extCube->Draw();
 
 		glCullFace(GL_BACK);
+
+		myShader.Use(); //DRAW SPIDER.
+
+		glm::mat4 modelMatrixSpider;
+		modelMatrixSpider =  glm::translate(modelMatrixSpider, glm::vec3(1.1f,-2.7f,-1.1f));
+		modelMatrixSpider = glm::scale(modelMatrixSpider, glm::vec3(0.008f));
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrixSpider));
+		spider.Draw(myShader);
+
+		myShader.Use(); //DRAW TORO.
+
+		glm::mat4 modelMatrixToro;
+		modelMatrixToro = glm::translate(modelMatrixToro, glm::vec3(1.1f, -3.0f, 1.1f));
+		modelMatrixToro = glm::scale(modelMatrixToro, glm::vec3(0.5f));
+		modelMatrixToro = glm::rotate(modelMatrixToro, glm::radians(90.f),glm::vec3(0.0f,1.0f,0.0f));
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrixToro));
+		toro.Draw(myShader);
+
+		myShader.Use(); //DRAW ALGO.
+
+		glm::mat4 modelMatrixAlgo;
+		modelMatrixAlgo = glm::translate(modelMatrixAlgo, glm::vec3(-1.0f, -3.0f, 0.0f));
+		modelMatrixAlgo = glm::scale(modelMatrixAlgo, glm::vec3(0.00825f));
+		modelMatrixAlgo = glm::rotate(modelMatrixAlgo, glm::radians(-90.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrixAlgo));
+		algo.Draw(myShader);
+
 
 		myShader.Use(); //DRAW BIG CUBE
 
